@@ -72,18 +72,6 @@ module Hand
     puts "=> Total: #{total}"
   end
 
-  def show_one_dealer
-    puts "----- Dealer -----"
-    puts "Showing:"
-    puts "=> #{cards.last}"
-  end
-
-  def flip_dealer_card
-    puts "Dealer flips the #{cards.first}"
-    puts
-    show_hand
-  end
-
   def total
     face_values = cards.map { |card| card.face_value }
 
@@ -133,6 +121,10 @@ class Player
       @name = gets.chomp
     end until !@name.empty?
   end
+
+  def print_result_message(message)
+    puts "#{name} #{message}"
+  end
 end
 
 class Dealer
@@ -143,6 +135,22 @@ class Dealer
   def initialize
     @name = "Dealer"
     @cards = []
+  end
+
+  def show_one_dealer
+    puts "----- Dealer -----"
+    puts "Showing:"
+    puts "=> #{cards.last}"
+  end
+
+  def flip_dealer_card
+    puts "Dealer flips the #{cards.first}"
+    puts
+    show_hand
+  end
+
+  def print_result_message(message)
+    puts "Dealer #{message}"
   end
 end
 
@@ -196,19 +204,16 @@ class Blackjack
 
   def blackjack_or_bust(player_or_dealer)
     if player_or_dealer.has_blackjack?
-      if player_or_dealer.is_a?(Player)
-        puts "#{player.name} hit Blackjack!"
-      elsif player_or_dealer.is_a?(Dealer)
-        puts "Dealer hit Blackjack!"
-      end
+      player_or_dealer.print_result_message("hit Blackjack!")
     elsif player_or_dealer.is_busted?
-      if player_or_dealer.is_a?(Player)
-        puts "#{player.name} busted!"
-        puts "#{player.name} loses."
-        play_again
-      elsif player_or_dealer.is_a?(Dealer)
-        puts "Dealer busted!"
-      end
+      player_or_dealer.print_result_message("busted!")
+    end
+  end
+
+  def player_busted?
+    if player.is_busted? 
+      player.print_result_message("loses!")
+      play_again
     end
   end
 
@@ -228,7 +233,8 @@ class Blackjack
       puts "#{player.name} dealt the #{hit_card}"
       puts "#{player.name}'s total is now #{player.total}"
       blackjack_or_bust(player)
-      player_turn
+      player_busted?
+      player_turn unless player.has_blackjack?
     when 's'
       puts "#{player.name} stays."
     end
@@ -254,6 +260,7 @@ class Blackjack
     line_divider
     puts "Player's Turn"
     blackjack_or_bust(player)
+    player_busted?
     player_choice unless player.has_blackjack?
   end
 
